@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Cute Monkey</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #f8c9d4, #d8a7b1);  /* Soft gradient background */
+            flex-direction: column;
+            font-family: 'Poppins', sans-serif;
+            position: relative;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        .monkey {
+            width: 20vw;
+            height: 20vw;
+            background: #a0522d;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+        }
+        .ear {
+            width: 8vw;
+            height: 8vw;
+            background: #a0522d;
+            border-radius: 50%;
+            position: absolute;
+            top: -2vw;
+        }
+        .ear.left { left: -5vw; }
+        .ear.right { right: -5vw; }
+        .eye {
+            width: 2vw;
+            height: 2vw;
+            background: black;
+            border-radius: 50%;
+            position: absolute;
+            top: 40%;
+        }
+        .eye.left { left: 30%; }
+        .eye.right { right: 30%; }
+        .mouth {
+            width: 4vw;
+            height: 2vw;
+            background: black;
+            border-radius: 50%;
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .message {
+            margin-top: 5vw;
+            font-size: 4vw;
+            color: #d81b60;
+            display: none;
+            text-align: center;
+        }
+        .click-counter {
+            position: absolute;
+            top: 2vw;
+            right: 2vw;
+            font-size: 3vw;
+            color: #ffffff;
+            background: #6a1b9a;
+            padding: 1vw 2vw;
+            border-radius: 1.5vw;
+            font-weight: bold;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        .emoji {
+            position: absolute;
+            font-size: 4vw;
+            opacity: 0;
+            transform: scale(0);
+        }
+        @media screen and (max-width: 480px) {
+            .monkey {
+                width: 25vw;
+                height: 25vw;
+            }
+            .ear {
+                width: 10vw;
+                height: 10vw;
+                top: -3vw;
+            }
+            .eye {
+                width: 3vw;
+                height: 3vw;
+            }
+            .mouth {
+                width: 5vw;
+                height: 3vw;
+            }
+            .message {
+                font-size: 5vw;
+            }
+            .click-counter {
+                font-size: 4vw;
+                padding: 2vw;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="click-counter" id="clickCounter">Clicks left: 5</div>
+    <div class="monkey" id="monkey">
+        <div class="ear left"></div>
+        <div class="ear right"></div>
+        <div class="eye left" id="leftEye"></div>
+        <div class="eye right" id="rightEye"></div>
+        <div class="mouth"></div>
+    </div>
+    <div class="message" id="message">You're Monkey-ing Around Varishayy! 🐵❤️</div>
+
+    <script>
+        let clickCount = 0;
+        const maxClicks = 5;
+        const maxEmojis = 30;  // Maximum number of emojis to appear
+        const emojis = ["🌸", "🌺", "🌼", "🌻", "🌷"];  // Array of aesthetic emojis
+        
+        document.getElementById("monkey").addEventListener("click", function() {
+            clickCount++;
+            gsap.to("#leftEye", { scaleY: 0.1, duration: 0.2, yoyo: true, repeat: 1 });
+
+            let clicksLeft = maxClicks - clickCount;
+            if (clicksLeft > 1) {
+                document.getElementById("clickCounter").innerText = `Clicks left: ${clicksLeft}`;
+            } else if (clicksLeft === 1) {
+                document.getElementById("clickCounter").innerText = "One more click for a surprise! 🎉";
+            } else {
+                document.getElementById("clickCounter").style.display = "none";
+                document.getElementById("message").style.display = "block";
+                gsap.from("#message", { opacity: 0, y: 20, duration: 1 });
+                createEmojis();
+            }
+
+            // Make the monkey perform actions based on click count
+            if (clickCount === 1) {
+                gsap.to("#leftEye", { scaleX: 0.1, duration: 0.2, yoyo: true, repeat: 1 });  // Winking
+            } else if (clickCount === 2) {
+                gsap.to("#mouth", { scaleY: 2, duration: 0.3, yoyo: true, repeat: 1 });  // Flying Kiss
+            } else if (clickCount === 3) {
+                gsap.to("#mouth", { scaleX: 2, duration: 0.4, yoyo: true, repeat: 1 });  // Laugh
+            }
+        });
+
+        function createEmojis() {
+            const emojisToCreate = Math.min(clickCount * 5, maxEmojis);  // Increase by 5 per click, up to maxEmojis
+            const messageRect = document.getElementById("message").getBoundingClientRect();
+            const monkeyRect = document.getElementById("monkey").getBoundingClientRect();
+            
+            for (let i = 0; i < emojisToCreate; i++) {
+                let emoji = document.createElement("div");
+                emoji.className = "emoji";
+                emoji.innerText = emojis[Math.floor(Math.random() * emojis.length)];  // Randomly select an emoji
+                document.body.appendChild(emoji);
+                
+                let x, y;
+                
+                // Find a position that doesn't overlap the monkey or the message area
+                do {
+                    x = Math.random() * window.innerWidth;
+                    y = Math.random() * window.innerHeight;
+                } while (isOverlap(x, y, monkeyRect, messageRect));
+
+                gsap.set(emoji, { left: x + "px", top: y + "px" });
+                gsap.to(emoji, { opacity: 1, scale: 1.5, duration: 1, ease: "elastic.out(1, 0.5)" });
+            }
+        }
+
+        function isOverlap(x, y, monkeyRect, messageRect) {
+            const buffer = 50;  // Buffer to prevent overlap
+            return (
+                (x >= monkeyRect.left - buffer && x <= monkeyRect.right + buffer && y >= monkeyRect.top - buffer && y <= monkeyRect.bottom + buffer) ||
+                (x >= messageRect.left - buffer && x <= messageRect.right + buffer && y >= messageRect.top - buffer && y <= messageRect.bottom + buffer)
+            );
+        }
+    </script>
+</body>
+</html>
